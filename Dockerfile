@@ -1,0 +1,18 @@
+FROM python:3.11.1-slim
+
+# Install pipenv
+RUN pip install pipenv
+
+# Set working directory
+WORKDIR /app
+
+# Copy files into container
+COPY bot.py .
+COPY Pipfile .
+COPY Pipfile.lock .
+
+# Install dependencies with pipenv
+RUN pipenv install --deploy
+
+# Run bot.py with pipenv
+CMD ["pipenv", "run", "python", "bot.py"]
