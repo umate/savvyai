@@ -7,6 +7,8 @@ name = "pypi"
 python-telegram-bot = "*"
 python-dotenv = "*"
 openai = "*"
+pydub = "*"
+uuid = "*"
 
 [dev-packages]
 

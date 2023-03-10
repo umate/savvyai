@@ -1,8 +1,11 @@
 import os
 import logging
 import openai
+import uuid
+import random
 from dotenv import load_dotenv
 from telegram import Update, ReplyKeyboardRemove, ReplyKeyboardMarkup
+from pydub import AudioSegment
 
 
 # try:
@@ -37,6 +40,36 @@ OPENAI_MODEL = "gpt-3.5-turbo"
 
 # telegram bot setup
 COMPLETION_PROMPT_STATE = range(1)
+LOADING_MESSAGES = [
+    "Almost there, just a sec!",
+    "Loading...please wait patiently!",
+    "Sit tight, we're working hard!",
+    "Processing your request, standby!",
+    "Don't panic, we're on it!",
+    "Just a moment, please!",
+    "Hold on, we're coming through!",
+    "Be patient, we'll be quick!",
+    "Processing...thank you for waiting!",
+    "Our elves are working diligently!"
+]
+
+
+def get_loading_message():
+    return random.choice(LOADING_MESSAGES)
+
+
+def ask_for_completion(prompt: str) -> str:
+    logger.info("Calling completion API")
+    response = openai.ChatCompletion.create(
+        model=OPENAI_MODEL,
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.5,
+        max_tokens=256,
+    )
+    return response.choices[0].message.content
 
 
 # srart command handler
@@ -63,18 +96,46 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 # completion prompt handler
 async def text_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logging.info("COMPLETION_PROMPT_STATE: Message received")
+    logging.info("Text message received handler")
     prompt = update.message.text
-    response = openai.ChatCompletion.create(
-        model=OPENAI_MODEL,
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.5,
-        max_tokens=256,
-    )
-    output_text = response.choices[0].message.content
+    output_text = ask_for_completion(prompt)
+    await update.message.reply_text(output_text)
+
+    return COMPLETION_PROMPT_STATE
+
+
+async def voice_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logging.info("Voice message received handler")
+    voice = update.message.voice
+    voice_file = await voice.get_file()
+
+    random_uuid = uuid.uuid4()
+    ogg_filename = f"{str(random_uuid)}.ogg"
+    mp3_filename = f"{str(random_uuid)}.mp3"
+
+    logging.info("Downloading voice message to disk")
+    await voice_file.download_to_drive(ogg_filename)
+    ogg_audio = AudioSegment.from_file(ogg_filename, format="ogg")
+    ogg_audio.export(mp3_filename, format="mp3")
+    await update.message.reply_text("Transcribing voice message...")
+
+    with open(mp3_filename, "rb") as audio_mp3:
+        logging.info("Transcribing voice message with Whisper API")
+        transcript = openai.Audio.transcribe("whisper-1", audio_mp3)
+        logging.info("DONE: Transcribing voice message with Whisper API")
+
+        logging.info("Removing temporary files")
+        os.remove(ogg_filename)
+        os.remove(mp3_filename)
+
+        if not transcript.text or transcript.text == "":
+            await update.message.reply_text("Oops, my bad, I didn't get that. Please try again.")
+            return COMPLETION_PROMPT_STATE
+
+        await update.message.reply_text("You said: " + transcript.text)
+        await update.message.reply_text(get_loading_message())
+
+    output_text = ask_for_completion(transcript.text)
     await update.message.reply_text(output_text)
 
     return COMPLETION_PROMPT_STATE
@@ -95,12 +156,14 @@ def main():
         entry_points=[
             CommandHandler("start", start),
             MessageHandler(filters.TEXT & ~filters.COMMAND,
-                           text_prompt_handler)
+                           text_prompt_handler),
+            MessageHandler(filters.VOICE, voice_prompt_handler),
         ],
         states={
             COMPLETION_PROMPT_STATE: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND,
                                text_prompt_handler),
+                MessageHandler(filters.VOICE, voice_prompt_handler),
                 MessageHandler(filters.COMMAND, text_prompt_fallback_handler)
             ],
         },
