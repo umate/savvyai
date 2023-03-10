@@ -63,7 +63,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 # completion prompt handler
 async def text_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    logging.info("Message received")
+    logging.info("COMPLETION_PROMPT_STATE: Message received")
     prompt = update.message.text
     response = openai.ChatCompletion.create(
         model=OPENAI_MODEL,
@@ -80,15 +80,29 @@ async def text_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     return COMPLETION_PROMPT_STATE
 
 
+async def text_prompt_fallback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    logging.info("COMPLETION_PROMPT_STATE: Fallback message received")
+    await update.message.reply_text("Sorry, this command is not supported. Please ask me anything in text or record a voice message.")
+    return COMPLETION_PROMPT_STATE
+
+
 def main():
     logging.info("Starting SavvyAI Bot")
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[
+            CommandHandler("start", start),
+            MessageHandler(filters.TEXT & ~filters.COMMAND,
+                           text_prompt_handler)
+        ],
         states={
-            COMPLETION_PROMPT_STATE: [MessageHandler(filters.TEXT & ~filters.COMMAND, text_prompt_handler)],
+            COMPLETION_PROMPT_STATE: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND,
+                               text_prompt_handler),
+                MessageHandler(filters.COMMAND, text_prompt_fallback_handler)
+            ],
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
