@@ -67,7 +67,7 @@ INTRO_MESSAGE_MARKDOWN = """Hello! I'm Savvy, your personal AI assistant. I'm he
 Don't hesitate to ask me anything!"""
 
 
-def get_loading_message():
+def _get_loading_message():
     return random.choice(LOADING_MESSAGES)
 
 
@@ -91,6 +91,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logging.info("/start command received")
     user = update.effective_user
     await update.message.reply_markdown(INTRO_MESSAGE_MARKDOWN)
+
+    gif_file_object = open('assets/SavvyAI-Voice-Instruction-Demo.gif', 'rb')
+    await update.message.reply_animation(
+        gif_file_object, caption='By the way, you can also send a voice message instead of typing.')
     return COMPLETION_PROMPT_STATE
 
 
@@ -109,8 +113,13 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 # completion prompt handler
 async def text_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logging.info("Text message received handler")
+    if not update.message.text or update.message.text == "":
+        await update.message.reply_text("Oops, my bad, I didn't get that. Please try again.")
+        return COMPLETION_PROMPT_STATE
+
     prompt = update.message.text
-    await update.message.reply_text(get_loading_message())
+    await update.message.reply_text(_get_loading_message())
+
     output_text = ask_for_completion(prompt)
     await update.message.reply_markdown(output_text)
 
@@ -146,7 +155,7 @@ async def voice_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYP
             return COMPLETION_PROMPT_STATE
 
         await update.message.reply_text("You said: " + transcript.text)
-        await update.message.reply_text(get_loading_message())
+        await update.message.reply_text(_get_loading_message())
 
     output_text = ask_for_completion(transcript.text)
     await update.message.reply_markdown(output_text)
