@@ -12,6 +12,7 @@ WORKDIR /app
 COPY bot.py .
 COPY Pipfile .
 COPY Pipfile.lock .
+COPY assets assets
 
 # Install dependencies with pipenv
 RUN pipenv install --deploy
