@@ -4,7 +4,7 @@ import openai
 import uuid
 import random
 from dotenv import load_dotenv
-from telegram import Update, ReplyKeyboardRemove, ReplyKeyboardMarkup
+from telegram import Update, ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
 from pydub import AudioSegment
 
 
@@ -53,6 +53,19 @@ LOADING_MESSAGES = [
     "Our elves are working diligently!"
 ]
 
+# COMPLETION_RESPONSE_MARKUP = ReplyKeyboardMarkup(
+#     [[KeyboardButton("👍 thanks!"), KeyboardButton("👎 let's try again")]], resize_keyboard=True, one_time_keyboard=True,
+# )
+INTRO_MESSAGE_MARKDOWN = """Hello! I'm Savvy, your personal AI assistant. I'm here to help answer any questions you may have, just like Google, but better with less noise. Here are a few examples of things you can ask me:
+
+- "What's a simple recipe for tacos?"
+- "What are some things to see in Kyoto?"
+- “10 Ideas for a Novel by William Shakespeare”
+- "How do I change a tire?"
+- "How do I say 'hello' in Spanish?"
+
+Don't hesitate to ask me anything!"""
+
 
 def get_loading_message():
     return random.choice(LOADING_MESSAGES)
@@ -63,12 +76,13 @@ def ask_for_completion(prompt: str) -> str:
     response = openai.ChatCompletion.create(
         model=OPENAI_MODEL,
         messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "system", "content": "You are a very helpful assistant that makes jokes from one in a while."},
             {"role": "user", "content": prompt},
         ],
-        temperature=0.5,
+        temperature=0.25,
         max_tokens=256,
     )
+
     return response.choices[0].message.content
 
 
@@ -76,9 +90,7 @@ def ask_for_completion(prompt: str) -> str:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logging.info("/start command received")
     user = update.effective_user
-    await update.message.reply_text(f"""Hey {user.first_name}!
-I'm Savvy, your new chatbot buddy. Need a funny joke or a random fact? Just ask! I'm here to be your digital assistant, your AI pal, your pocket-sized problem solver. So, what can I do for you today?"""
-                                    )
+    await update.message.reply_markdown(INTRO_MESSAGE_MARKDOWN)
     return COMPLETION_PROMPT_STATE
 
 
@@ -98,8 +110,9 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 async def text_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     logging.info("Text message received handler")
     prompt = update.message.text
+    await update.message.reply_text(get_loading_message())
     output_text = ask_for_completion(prompt)
-    await update.message.reply_text(output_text)
+    await update.message.reply_markdown(output_text)
 
     return COMPLETION_PROMPT_STATE
 
@@ -136,7 +149,7 @@ async def voice_prompt_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text(get_loading_message())
 
     output_text = ask_for_completion(transcript.text)
-    await update.message.reply_text(output_text)
+    await update.message.reply_markdown(output_text)
 
     return COMPLETION_PROMPT_STATE
 
