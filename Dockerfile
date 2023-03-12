@@ -9,13 +9,13 @@ RUN pip install pipenv
 WORKDIR /app
 
 # Copy files into container
-COPY bot.py .
+COPY src src
+COPY assets assets
 COPY Pipfile .
 COPY Pipfile.lock .
-COPY assets assets
 
 # Install dependencies with pipenv
 RUN pipenv install --deploy
 
 # Run bot.py with pipenv
-CMD ["pipenv", "run", "python", "bot.py"]
+CMD ["pipenv", "run", "python", "src/bot.py"]

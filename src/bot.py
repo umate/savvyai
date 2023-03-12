@@ -83,6 +83,8 @@ def ask_for_completion(prompt: str) -> str:
         max_tokens=256,
     )
 
+    logger.info("Completion API response: %s", response.to_dict())
+
     return response.choices[0].message.content
 
 
