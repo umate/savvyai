@@ -11,6 +11,7 @@ WORKDIR /app
 # Copy files into container
 COPY src src
 COPY assets assets
+COPY voice voice
 COPY Pipfile .
 COPY Pipfile.lock .
 

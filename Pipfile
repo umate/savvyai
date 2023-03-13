@@ -9,6 +9,7 @@ python-dotenv = "*"
 openai = "*"
 pydub = "*"
 uuid = "*"
+redis = "*"
 
 [dev-packages]
 
