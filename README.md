@@ -17,10 +17,10 @@ Please note that the bot is still in development, and it may not work as expecte
 
 ## Features
 
-[x] Chat completion using gpt-3.5-turbo model
-[x] Voice transcription using Whisper API and completion
-[x] Daily rate limiting for both completion and Whisper API endpoints
-[ ] Ability to keep context between interaction. The bot is only able to process atomic requests now.
+- [x] Chat completion using gpt-3.5-turbo model
+- [x] Voice transcription using Whisper API and completion
+- [x] Daily rate limiting for both completion and Whisper API endpoints
+- [ ] Ability to keep context between interaction. The bot is only able to process atomic requests now.
 
 ## Getting Started
 
@@ -37,6 +37,7 @@ To SavvyAI locally, follow these steps:
 ## Usage
 
 Just type any questions or query you want to ask the assistant and it will try to answer it.
+
 You can also use the bot to transcribe your voice messages and complete them using a voice recording feature in Telegram located in the bottom right corner of the chat.
 
 ## Contributing
