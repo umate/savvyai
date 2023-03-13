@@ -8,8 +8,8 @@
 
 # SavvyAI Telegram Bot
 
-SavvyAI is an open source Telegram bot that let's people play with the letest LLM.
-SavvyAI is intended to be a non-profit project aming to give people access to recently released OpenAI GPT-3.5-turbo model in a form a of a [Telegram](https://telegram.org/) bot.
+SavvyAI is an open source Telegram bot that let's non-technical people play with the latest LLMs available.
+SavvyAI is intended to be a non-profit project aiming to give people access to recently released OpenAI GPT-3.5-turbo model in a form a of a [Telegram](https://telegram.org/) bot.
 
 The project can be run locally, or you can try a cloud version that I am running on Render (http://render.com/) [here](https://t.me/savvyai_bot). Each user is given 10,000 free tokens per day to try out the bot, along with 3 minutes of voice transcription.
 
@@ -18,8 +18,8 @@ Please note that the bot is still in development, and it may not work as expecte
 ## Features
 
 [x] Chat completion using gpt-3.5-turbo model
-[x] Voice transcription using Wisper API and completion
-[x] Daily rate limiting for both completion and Wisper API endpoints
+[x] Voice transcription using Whisper API and completion
+[x] Daily rate limiting for both completion and Whisper API endpoints
 [ ] Ability to keep context between interaction. The bot is only able to process atomic requests now.
 
 ## Getting Started
