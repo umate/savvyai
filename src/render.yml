@@ -1,0 +1,21 @@
+services:
+  # A Docker web service
+  - type: worker
+    name: telegram_bot
+    env: docker
+    plan: starter
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: limits_store
+          property: connectionString # available properties are listed below
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+
+  - type: redis
+    name: limits_store
+    plan: free
+    maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
