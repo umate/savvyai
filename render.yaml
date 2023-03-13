@@ -18,4 +18,5 @@ services:
   - type: redis
     name: limits_store
     plan: free
+    ipAllowList: []
     maxmemoryPolicy: noeviction # optional (defaults to allkeys-lru)
